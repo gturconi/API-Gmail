@@ -22,7 +22,6 @@ async function authorize() {
 
 async function getEmails(auth, res, sender = '', pageToken = null) {
   const gmail = google.gmail({ version: 'v1', auth });
-  console.log('Entra a getEmails', pageToken);
   const requestParams = {
     userId: 'me',
     q: sender !== '' ? 'from:' + sender : '',
@@ -34,8 +33,6 @@ async function getEmails(auth, res, sender = '', pageToken = null) {
   }
 
   const gmailRes = await gmail.users.messages.list(requestParams);
-
-  console.log('Respuesta: ', gmailRes);
 
   const messages = gmailRes.data.messages;
   const nextPageToken = gmailRes.data.nextPageToken;
