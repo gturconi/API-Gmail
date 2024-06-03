@@ -20,15 +20,26 @@ async function authorize() {
   return oauth2Client;
 }
 
-async function getEmails(auth, res, sender = '') {
+async function getEmails(auth, res, sender = '', pageToken = null) {
   const gmail = google.gmail({ version: 'v1', auth });
-  const gmailRes = await gmail.users.messages.list({
+
+  const requestParams = {
     userId: 'me',
     q: sender !== '' ? 'from:' + sender : '',
     maxResults: 10,
-  });
+  };
+
+  if (pageToken) {
+    requestParams.pageToken = pageToken;
+  }
+
+  const gmailRes = await gmail.users.messages.list(requestParams);
+
+  console.log('Respuesta: ', gmailRes);
 
   const messages = gmailRes.data.messages;
+  const nextPageToken = gmailRes.data.nextPageToken;
+
   if (!messages || messages.length === 0) {
     console.log('No messages found.');
     res.json({ message: 'No messages found.' });
@@ -86,7 +97,7 @@ async function getEmails(auth, res, sender = '') {
       mimeType: mimeTypes,
     });
   }
-  res.json(emailData);
+  res.json({ emailData, nextPageToken });
 }
 
 function extractBody(parts) {
@@ -269,7 +280,9 @@ async function processNewEmails(auth, emailAddress) {
     const subject = subjectHeader ? subjectHeader.value : 'No Subject';
     const from = fromHeader ? fromHeader.value : 'Unknown sender';
 
-    console.log(`New email from ${from} with subject: ${subject}`);
+    console.log(
+      `New email from ${from} with subject: ${subject} and Id: ${message.id}`
+    );
 
     //Acá podríamos llamar a un servidor de websockets para alertar al front
   }

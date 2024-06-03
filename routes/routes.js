@@ -15,7 +15,9 @@ router.post('/pubsub', handlePubSubNotification);
 router.get('/', async (req, res) => {
   try {
     const auth = await authorize();
-    await getEmails(auth, res);
+    const pageToken = req.query.pageToken || null;
+
+    await getEmails(auth, res, '', pageToken);
   } catch (err) {
     console.error('Error getting emails:', err);
     res.status(500).send('Error getting emails');
