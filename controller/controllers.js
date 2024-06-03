@@ -283,8 +283,14 @@ async function processNewEmails(auth, emailAddress) {
       (header) => header.name === 'Subject'
     );
 
+    const fromHeader = msg.data.payload.headers.find(
+      (header) => header.name === 'From'
+    );
+
     const subject = subjectHeader ? subjectHeader.value : 'No Subject';
-    console.log(`New email with subject: ${subject}`);
+    const from = fromHeader ? fromHeader.value : 'Unknown sender';
+
+    console.log(`New email from ${from} with subject: ${subject}`);
 
     // Here you can process the email further, e.g., save it to a database, etc.
   }
