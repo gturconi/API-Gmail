@@ -170,26 +170,6 @@
         emailTableBody.innerHTML = '';
         emailTable2Body.innerHTML = '';
 
-        /*table.innerHTML = `
-          <tr>
-            <th scope="col" >Remitente</th>
-            <th scope="col" >Fecha</th>
-            <th scope="col" >Asunto</th>
-            <th scope="col" >Mensaje</th>
-            <th scope="col" >Acciones</th>
-          </tr>
-        `;
-
-        table2.innerHTML = `
-          <tr>
-            <th scope="col">Para</th>
-            <th scope="col">Fecha</th>
-            <th scope="col">Asunto</th>
-            <th scope="col">Mensaje</th>
-            <th scope="col">Acciones</th>
-          </tr>
-        `;*/
-
         if (Array.isArray(emails) && emails.length > 0) {
           emails.forEach((email) => {
             const row = document.createElement('tr');
@@ -258,6 +238,7 @@
             const deleteRow = document.createElement('td');
             const deleteButton = document.createElement('button');
             deleteButton.textContent = 'Eliminar';
+            deleteButton.style.cursor = 'pointer';
             deleteButton.addEventListener('click', () => {
               deleteEmail(email.messageId);
             });
@@ -315,6 +296,7 @@
           });
           const data = await response.json();
           alert('Correo enviado con éxito');
+          fetchEmails();
           console.log(data);
         } catch (error) {
           alert('Error al enviar el correo', error);
@@ -354,7 +336,7 @@
           });
           const data = await response.json();
           console.log(data);
-          renderTables(emails);
+          fetchEmails();
           alert('Correo eliminado');
         } catch (error) {
           console.error('Error deleting email:', error);

@@ -6,12 +6,9 @@ const {
   getAttachment,
   deleteEmail,
   handlePubSubNotification,
-  //quickstart,
-  // watchNotifications,
 } = require('../controller/controllers');
 
 const router = express.Router();
-//watchNotifications();
 
 router.post('/pubsub', handlePubSubNotification);
 

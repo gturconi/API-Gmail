@@ -45,7 +45,7 @@ async function watch() {
       // doSomething here;
       return;
     }
-    console.log(res);
+    //console.log(res);
   });
 }
 watch();

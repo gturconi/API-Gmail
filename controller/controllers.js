@@ -207,27 +207,6 @@ async function deleteEmail(auth, messageId, req, res) {
     throw error;
   }
 }
-/*
-async function quickstart(
-  projectId = process.env.PORJECT_ID, // Your Google Cloud Platform project ID
-  topicNameOrId = process.env.PUB_SUB_TOPIC_NAME, // Name for the new topic to create
-  subscriptionName = process.env.PUB_SUB_NAME // Name for the new subscription to create
-) {
-  const pubsub = new PubSub({ projectId });
-
-  // Receive callbacks for new messages on the subscription
-  subscription.on('message', (message) => {
-    console.log('Received message:', message.data.toString());
-    process.exit(0);
-  });
-
-  // Receive callbacks for errors on the subscription
-  subscription.on('error', (error) => {
-    console.error('Received error:', error);
-    process.exit(1);
-  });
-}
-*/
 
 async function handlePubSubNotification(req, res) {
   const pubsubMessage = req.body.message;
@@ -292,7 +271,7 @@ async function processNewEmails(auth, emailAddress) {
 
     console.log(`New email from ${from} with subject: ${subject}`);
 
-    // Here you can process the email further, e.g., save it to a database, etc.
+    //Acá podríamos llamar a un servidor de websockets para alertar al front
   }
 }
 
