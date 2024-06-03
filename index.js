@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-
+const { authorize, setWatch } = require('./controller/controllers');
 const app = express();
 
 app.use(express.json({ limit: '50mb' }));
@@ -17,3 +17,5 @@ app.listen(PORT, () => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+//setWatch(authorize);

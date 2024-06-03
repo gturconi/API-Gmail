@@ -4,6 +4,19 @@ dotenv.config();
 
 const SCOPES = ['https://mail.google.com/'];
 
+/*
+async function watchNotifications() {
+  const gmail = await authorize();
+  const watch = await gmail.users.watch({
+    userId: process.env.EMAIL_TO_READ,
+    requestBody: {
+      labelIds: ['INBOX'],
+      topicName: process.env.PUB_SUB_TOPIC_NAME,
+    },
+  });
+  return watch.status;
+}
+*/
 async function authorize() {
   const oauth2Client = new google.auth.OAuth2(
     process.env.GMAIL_CLIENT_ID,
@@ -206,6 +219,86 @@ async function deleteEmail(auth, messageId, req, res) {
   }
 }
 
+async function handlePubSubNotification(req, res) {
+  const pubsubMessage = req.body.message;
+
+  if (!pubsubMessage) {
+    console.error('No Pub/Sub message received');
+    res.status(400).send('No Pub/Sub message received');
+    return;
+  }
+
+  const data = pubsubMessage.data
+    ? Buffer.from(pubsubMessage.data, 'base64').toString()
+    : '{}';
+  const message = JSON.parse(data);
+
+  console.log('Received Pub/Sub message:', message);
+
+  if (message.emailAddress) {
+    try {
+      const auth = await authorize();
+      await processNewEmails(auth, message.emailAddress);
+      res.status(200).send('Processed Pub/Sub message');
+    } catch (error) {
+      console.error('Error processing Pub/Sub message:', error);
+      res.status(500).send('Error processing Pub/Sub message');
+    }
+  } else {
+    res.status(400).send('Invalid Pub/Sub message format');
+  }
+}
+
+async function processNewEmails(auth, emailAddress) {
+  const gmail = google.gmail({ version: 'v1', auth });
+  const gmailRes = await gmail.users.messages.list({
+    userId: emailAddress,
+    q: 'is:unread',
+    maxResults: 10,
+  });
+
+  const messages = gmailRes.data.messages;
+  if (!messages || messages.length === 0) {
+    console.log('No unread messages found.');
+    return;
+  }
+
+  for (const message of messages) {
+    const msg = await gmail.users.messages.get({
+      userId: emailAddress,
+      id: message.id,
+    });
+
+    const subjectHeader = msg.data.payload.headers.find(
+      (header) => header.name === 'Subject'
+    );
+
+    const subject = subjectHeader ? subjectHeader.value : 'No Subject';
+    console.log(`New email with subject: ${subject}`);
+
+    // Here you can process the email further, e.g., save it to a database, etc.
+  }
+}
+
+async function setWatch(auth) {
+  const gmail = google.gmail({ version: 'v1', auth });
+
+  const watchRequest = {
+    userId: 'me',
+    requestBody: {
+      labelIds: ['INBOX'],
+      topicName: `projects/${process.env.PORJECT_ID}/topics/${process.env.PUB_SUB_TOPIC_NAME}`,
+    },
+  };
+
+  try {
+    const response = await gmail.users.watch(watchRequest);
+    console.log('Watch set successfully:', response.data);
+  } catch (error) {
+    console.error('Error setting watch:', error);
+  }
+}
+
 module.exports = {
   getEmails,
   authorize,
@@ -213,4 +306,7 @@ module.exports = {
   markEmailAsRead,
   getAttachment,
   deleteEmail,
+  handlePubSubNotification,
+  setWatch,
+  // watchNotifications,
 };
