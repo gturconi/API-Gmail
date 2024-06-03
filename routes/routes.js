@@ -27,8 +27,10 @@ router.get('/', async (req, res) => {
 router.get('/sender', async (req, res) => {
   try {
     const auth = await authorize();
+    const pageToken = req.query.pageToken || null;
+
     const { sender } = req.query;
-    await getEmails(auth, res, sender);
+    await getEmails(auth, res, sender, pageToken);
   } catch (err) {
     console.error('Error getting emails:', err);
     res.status(500).send('Error getting emails');
