@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Email List</title>
+    <!-- Bootstrap CSS CDN -->
+    <link
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+        word-break: break-word;
+      }
+      th,
+      td {
+        padding: 15px;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        white-space: normal;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      td img {
+        max-width: 100px;
+        height: auto;
+      }
+      .table-container {
+        width: 100%;
+        overflow-x: auto;
+      }
+      pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      #searchForm {
+        margin: 10px;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+      }
+      #searchInput {
+        width: 400px;
+      }
+
+      #sendEmailForm {
+        display: flex;
+        flex-direction: column;
+        margin-top: 2px;
+        margin-right: 2px;
+        width: 500px;
+      }
+
+      textarea {
+        height: 200px;
+      }
+
+      .message-column {
+        width: 50% !important;
+        min-width: 50% !important;
+      }
+    </style>
+  </head>
+  <body class="container">
+    <div class="search">
+      <form id="searchForm" class="form-inline">
+        <input
+          type="search"
+          id="searchInput"
+          class="form-control mr-2"
+          placeholder="Buscar por remitente"
+        />
+        <button type="submit" id="searchButton" class="btn btn-primary">
+          Buscar
+        </button>
+      </form>
+    </div>
+    <h1 class="my-4">Emails Recibidos</h1>
+    <div class="table-container">
+      <table id="emailTable" class="table table-striped">
+        <thead>
+          <tr>
+            <th>Remitente</th>
+            <th>Fecha</th>
+            <th>Asunto</th>
+            <th class="message-column">Mensaje</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <h1 class="my-4">Emails Enviados</h1>
+    <div class="table-container">
+      <table id="emailTable2" class="table table-striped">
+        <thead>
+          <tr>
+            <th>Para</th>
+            <th>Fecha</th>
+            <th>Asunto</th>
+            <th class="message-column">Mensaje</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="send-email my-4">
+      <form id="sendEmailForm">
+        <div class="form-group">
+          <label for="toAddress">Para:</label>
+          <input
+            type="text"
+            id="toAddress"
+            name="toAddress"
+            class="form-control"
+            placeholder="gonzalo@fidelitytools.com"
+          />
+        </div>
+        <div class="form-group">
+          <label for="subject">Asunto:</label>
+          <input type="text" id="subject" name="subject" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label for="message">Mensaje:</label>
+          <textarea
+            id="message"
+            name="message"
+            class="form-control"
+            placeholder="Contenido de prueba"
+          ></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar</button>
+      </form>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <script>
+      async function fetchEmails() {
+        try {
+          const response = await fetch('/api');
+          const emails = await response.json();
+          console.log(emails);
+
+          renderTables(emails);
+        } catch (error) {
+          console.error('Error fetching emails:', error);
+        }
+      }
+
+      function renderTables(emails) {
+        const emailTableBody = document.querySelector('#emailTable tbody');
+        const emailTable2Body = document.querySelector('#emailTable2 tbody');
+
+        emailTableBody.innerHTML = '';
+        emailTable2Body.innerHTML = '';
+
+        /*table.innerHTML = `
+          <tr>
+            <th scope="col" >Remitente</th>
+            <th scope="col" >Fecha</th>
+            <th scope="col" >Asunto</th>
+            <th scope="col" >Mensaje</th>
+            <th scope="col" >Acciones</th>
+          </tr>
+        `;
+
+        table2.innerHTML = `
+          <tr>
+            <th scope="col">Para</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Asunto</th>
+            <th scope="col">Mensaje</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        `;*/
+
+        if (Array.isArray(emails) && emails.length > 0) {
+          emails.forEach((email) => {
+            const row = document.createElement('tr');
+
+            if (email.to.includes('desarrolladorweb3@fidelitytools.com')) {
+              const fromCell = document.createElement('td');
+              fromCell.textContent = email.from;
+              row.appendChild(fromCell);
+            } else {
+              const toCell = document.createElement('td');
+              toCell.textContent = email.to;
+              row.appendChild(toCell);
+            }
+
+            const dateCell = document.createElement('td');
+            dateCell.textContent = email.date;
+            row.appendChild(dateCell);
+
+            const subjectCell = document.createElement('td');
+            subjectCell.textContent = email.subject;
+            row.appendChild(subjectCell);
+
+            const bodyCell = document.createElement('td');
+
+            if (email.bodyHtml) {
+              bodyCell.innerHTML = email.bodyHtml;
+            } else if (email.bodyText) {
+              const preElement = document.createElement('pre');
+              preElement.innerHTML = email.bodyText;
+              bodyCell.appendChild(preElement);
+            }
+
+            if (email.attachments) {
+              email.attachments.forEach((att) => {
+                if (att != null) {
+                  console.log(att);
+                  getAttachment(email.messageId, att.attachmentId)
+                    .then((res) => {
+                      console.log(res);
+                      let dataBase64Rep = res.data
+                        .replace(/-/g, '+')
+                        .replace(/_/g, '/');
+                      let urlBlob = b64toBlob(
+                        dataBase64Rep,
+                        emails.mimeType,
+                        res.size
+                      );
+
+                      const link = document.createElement('a');
+                      link.href = urlBlob;
+                      link.textContent = att.filename;
+                      link.download = att.filename;
+                      bodyCell.appendChild(link);
+                    })
+                    .catch((error) => {
+                      console.error(
+                        'Error obteniendo el archivo adjunto:',
+                        error
+                      );
+                    });
+                }
+              });
+            }
+            row.appendChild(bodyCell);
+
+            const deleteRow = document.createElement('td');
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Eliminar';
+            deleteButton.addEventListener('click', () => {
+              deleteEmail(email.messageId);
+            });
+            deleteRow.appendChild(deleteButton);
+            row.appendChild(deleteRow);
+
+            if (email.to.includes('desarrolladorweb3@fidelitytools.com')) {
+              emailTableBody.appendChild(row);
+            } else {
+              emailTable2Body.appendChild(row);
+            }
+          });
+        } else {
+          const row = document.createElement('tr');
+          const noEmailsCell = document.createElement('td');
+          noEmailsCell.setAttribute('colspan', '4');
+          noEmailsCell.textContent = 'No emails found.';
+          row.appendChild(noEmailsCell);
+          table.appendChild(row);
+        }
+      }
+
+      async function fetchSenderEmails(event) {
+        console.log('Buscando por remitente...');
+        event.preventDefault();
+        const sender = document.getElementById('searchInput').value;
+        try {
+          const response = await fetch('/api/sender?sender=' + sender);
+          const emails = await response.json();
+          console.log(emails);
+
+          renderTables(emails);
+        } catch (error) {
+          console.error('Error fetching emails:', error);
+        }
+      }
+
+      async function sendEmail(event) {
+        event.preventDefault();
+        const to = document.getElementById('toAddress').value;
+        const subject = document.getElementById('subject').value;
+        const message = document.getElementById('message').value;
+        try {
+          const response = await fetch('/api/send', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fromAddress: 'desarrolladorweb3@fidelitytools.com',
+              toAddress: to,
+              subject,
+              message,
+            }),
+          });
+          const data = await response.json();
+          alert('Correo enviado con éxito');
+          console.log(data);
+        } catch (error) {
+          alert('Error al enviar el correo', error);
+          console.error('Error sending email:', error);
+        }
+      }
+
+      async function getAttachment(messageId, attachmentId) {
+        try {
+          const response = await fetch('/api/attachment', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messageId,
+              attachmentId,
+            }),
+          });
+          const data = await response.json();
+          return data;
+        } catch (error) {
+          console.error('Error getting attachment:', error);
+        }
+      }
+
+      async function deleteEmail(messageId) {
+        try {
+          const response = await fetch('/api/delete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messageId,
+            }),
+          });
+          const data = await response.json();
+          console.log(data);
+          renderTables(emails);
+          alert('Correo eliminado');
+        } catch (error) {
+          console.error('Error deleting email:', error);
+        }
+      }
+
+      function b64toBlob(b64Data, contentType, sliceSize) {
+        contentType = contentType || '';
+        sliceSize = sliceSize || 512;
+
+        var byteCharacters = atob(b64Data);
+        var byteArrays = [];
+
+        for (
+          var offset = 0;
+          offset < byteCharacters.length;
+          offset += sliceSize
+        ) {
+          var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+          var byteNumbers = new Array(slice.length);
+          for (var i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+
+          var byteArray = new Uint8Array(byteNumbers);
+
+          byteArrays.push(byteArray);
+        }
+
+        var blob = new Blob(byteArrays, { type: contentType });
+        let urlBlob = URL.createObjectURL(blob);
+        return urlBlob;
+      }
+
+      document
+        .getElementById('sendEmailForm')
+        .addEventListener('submit', sendEmail);
+
+      document
+        .getElementById('searchForm')
+        .addEventListener('submit', fetchSenderEmails);
+
+      fetchEmails();
+    </script>
+  </body>
+</html>
