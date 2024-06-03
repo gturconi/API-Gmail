@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
+    "@google-cloud/pubsub": "^4.4.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

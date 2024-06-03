@@ -1,7 +1,15 @@
 const express = require('express');
+const { google } = require('googleapis');
+
+const { authorize } = require('./controller/controllers.js');
 const cors = require('cors');
 const path = require('path');
-const { authorize, setWatch } = require('./controller/controllers');
+
+const dotenv = require('dotenv');
+dotenv.config();
+
+//require('./controller/pubsub');
+
 const app = express();
 
 app.use(express.json({ limit: '50mb' }));
@@ -18,4 +26,26 @@ app.listen(PORT, () => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-//setWatch(authorize);
+//Para que funcionen las notificaciones
+async function watch() {
+  const auth = await authorize();
+
+  var options = {
+    userId: 'me',
+    auth: auth,
+    resource: {
+      labelIds: ['INBOX'],
+      topicName: `projects/${process.env.PORJECT_ID}/topics/${process.env.PUB_SUB_TOPIC_NAME}`,
+    },
+  };
+
+  const gmail = google.gmail({ version: 'v1', auth });
+  gmail.users.watch(options, function (err, res) {
+    if (err) {
+      // doSomething here;
+      return;
+    }
+    console.log(res);
+  });
+}
+watch();
